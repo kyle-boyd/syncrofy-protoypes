@@ -131,6 +131,71 @@ function MyPrototype() {
 export default MyPrototype;
 ```
 
+## Deployment
+
+### Deploying to Vercel
+
+This project is configured for easy deployment to Vercel. The `vercel.json` file handles SPA routing automatically.
+
+#### Prerequisites for Vercel Deployment
+
+The design system must be available during the build process. You have two options:
+
+**Option 1: Git Submodule (Recommended)**
+
+If the design system is in a separate repository, add it as a git submodule:
+
+```bash
+git submodule add <design-system-repo-url> design-system
+git submodule update --init --recursive
+```
+
+Then update `vite.config.ts` to use `./design-system` instead of `../syncrofy-ds/src`.
+
+**Option 2: Include Design System in Repository**
+
+Copy the design system into this repository so it's available during builds.
+
+#### Deployment Steps
+
+1. **Push your code to GitHub** (if not already):
+   ```bash
+   git add .
+   git commit -m "Configure for Vercel deployment"
+   git push
+   ```
+
+2. **Connect to Vercel**:
+   - Go to [vercel.com](https://vercel.com)
+   - Sign up/login with your GitHub account
+   - Click "Add New Project"
+   - Import your `syncrofy-prototypes` repository
+
+3. **Vercel will auto-detect**:
+   - Framework: Vite
+   - Build Command: `npm run build` (automatically runs `prepare-ds` first)
+   - Output Directory: `dist`
+   - The `vercel.json` file handles SPA routing
+
+4. **Deploy**:
+   - Click "Deploy"
+   - Vercel will build and deploy your app
+   - You'll get a URL like `your-project.vercel.app`
+
+5. **Automatic deployments**:
+   - Every push to your main branch triggers a new deployment
+   - Pull requests get preview deployments automatically
+
+#### Build Process
+
+The build process automatically:
+1. Runs `prepare-ds` script to copy the design system (if available locally)
+2. Compiles TypeScript
+3. Builds the Vite project
+4. Outputs to `dist` directory
+
+**Note**: For Vercel builds, ensure the design system is available either as a git submodule or included in the repository structure.
+
 ## License
 
 ISC

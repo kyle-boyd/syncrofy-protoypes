@@ -124,7 +124,7 @@ function Home() {
               label="Text Input"
               placeholder="Enter text here"
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value)}
             />
             <Input
               label="Required Input"
@@ -153,7 +153,7 @@ function Home() {
             <Box>
               <Checkbox
                 checked={checked}
-                onChange={(e) => setChecked(e.target.checked)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setChecked(e.target.checked)}
               />
               <Typography component="span" sx={{ ml: 1 }}>
                 Checkbox option
@@ -162,7 +162,7 @@ function Home() {
             <Box>
               <Radio
                 checked={radioValue === 'option1'}
-                onChange={(e) => setRadioValue('option1')}
+                onChange={() => setRadioValue('option1')}
                 value="option1"
               />
               <Typography component="span" sx={{ ml: 1 }}>
@@ -172,7 +172,7 @@ function Home() {
             <Box>
               <Radio
                 checked={radioValue === 'option2'}
-                onChange={(e) => setRadioValue('option2')}
+                onChange={() => setRadioValue('option2')}
                 value="option2"
               />
               <Typography component="span" sx={{ ml: 1 }}>

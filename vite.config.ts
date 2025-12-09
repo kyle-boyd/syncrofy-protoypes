@@ -1,7 +1,13 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { existsSync } from 'fs';
 import { designSystemAlias } from './vite-plugin-ds-alias';
+
+// Determine design system path - prefer local copy for builds, fall back to relative path for dev
+const localDsPath = path.resolve(__dirname, './design-system');
+const relativeDsPath = path.resolve(__dirname, '../syncrofy-ds/src');
+const designSystemPath = existsSync(localDsPath) ? localDsPath : relativeDsPath;
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -17,7 +23,7 @@ export default defineConfig({
       // Our project's src alias
       '@': path.resolve(__dirname, './src'),
       // Design system alias - use this to import from design system
-      '@ds': path.resolve(__dirname, '../syncrofy-ds/src'),
+      '@ds': designSystemPath,
       // Force single React instance to prevent "Invalid hook call" errors
       'react': path.resolve(__dirname, './node_modules/react'),
       'react-dom': path.resolve(__dirname, './node_modules/react-dom'),

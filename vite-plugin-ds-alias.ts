@@ -8,7 +8,10 @@ import { existsSync } from 'fs';
  * to the design system's src directory instead of our project's src
  */
 export function designSystemAlias(): Plugin {
-  const designSystemSrc = path.resolve(__dirname, '../syncrofy-ds/src');
+  // Check for local copy first (for builds), then fall back to relative path (for dev)
+  const localDsPath = path.resolve(__dirname, './design-system');
+  const relativeDsPath = path.resolve(__dirname, '../syncrofy-ds/src');
+  const designSystemSrc = existsSync(localDsPath) ? localDsPath : relativeDsPath;
   
   return {
     name: 'design-system-alias',

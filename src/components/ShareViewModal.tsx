@@ -138,7 +138,7 @@ export function ShareViewModal({
               label="Search users"
               placeholder="Type to search for users..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               fullWidth
             />
 
