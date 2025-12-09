@@ -4,10 +4,13 @@ import path from 'path';
 import { existsSync } from 'fs';
 import { designSystemAlias } from './vite-plugin-ds-alias';
 
-// Determine design system path - prefer local copy for builds, fall back to relative path for dev
+// Determine design system path - prefer submodule, then local copy, then relative path for dev
+const submoduleDsPath = path.resolve(__dirname, './design-system/src');
 const localDsPath = path.resolve(__dirname, './design-system');
 const relativeDsPath = path.resolve(__dirname, '../syncrofy-ds/src');
-const designSystemPath = existsSync(localDsPath) ? localDsPath : relativeDsPath;
+const designSystemPath = existsSync(submoduleDsPath) 
+  ? submoduleDsPath 
+  : (existsSync(localDsPath) ? localDsPath : relativeDsPath);
 
 // https://vitejs.dev/config/
 export default defineConfig({
