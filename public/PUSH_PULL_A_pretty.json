@@ -1,0 +1,43 @@
+[
+{
+  "ProducerPattern": "PUSH",
+  "direction": "R",
+  "status": "Success",
+  "username": "ftsi72236",
+  "producerUserId": "ftsi72236",
+  "producerMailboxPath": "/BackofficeGplus",
+  "producerFileSize": "129",
+  "producerFilename": "AspectBackOfficeEmailForecastAPS.2025.10.05.20.00.00.txt",
+  "producerRemoteHost": "wh-1a45e881cd",
+  "producerRemoteIp": "169.103.226.194",
+  "producerProtocol": "sftp",
+  "stage": "ARRIVED_FILE",
+  "event": "StartTransfer",
+  "time": "1759708832278",
+  "arrivedfile_KEY": "b0a8bc9a-a4ff-4325-81bd-10b229f08726",
+  "event_KEY": "b0a8bc9a-a4ff-4325-81bd-10b229f08726"
+},
+{
+  "consumerName": "ftsi72236",
+  "consumerProtocol": "MBX",
+  "consumerFilename": "AspectBackOfficeEmailForecastAPS.2025.10.05.20.00.00.txt",
+  "consumerMailboxPath": "/BackofficeGplus",
+  "consumerFileSize": "731",
+  "stage": "DELIVERY",
+  "event": "StartedDelivery",
+  "time": "1759708833891",
+  "arrivedfile_KEY": "b0a8bc9a-a4ff-4325-81bd-10b229f08726",
+  "event_KEY": "b0a8bc9a-a4ff-4325-81bd-10b229f08726"
+},
+{
+  "STAGE": "DELIVERY",
+  "Event": "ProcessDetails",
+  "ARRIVEDFILE_KEY": "b0a8bc9a-a4ff-4325-81bd-10b229f08726",
+  "EVENT_KEY": "b0a8bc9a-a4ff-4325-81bd-10b229f08726",
+  "time": "1759708833892",
+
+  "LayerType": "Routed",
+  "LayerFilename": "AspectBackOfficeEmailForecastAPS.2025.10.05.20.00.00.txt",
+  "LayerMessage": "File is waiting pickup by partner"
+}
+]
