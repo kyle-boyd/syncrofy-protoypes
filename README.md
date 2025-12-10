@@ -139,21 +139,12 @@ This project is configured for easy deployment to Vercel. The `vercel.json` file
 
 #### Prerequisites for Vercel Deployment
 
-The design system must be available during the build process. **Git Submodule is recommended** and already configured.
+The design system is included directly in this repository at `design-system/src`. This means:
+- ✅ No authentication needed
+- ✅ Works immediately on Vercel
+- ✅ No submodule setup required
 
-**Setting up the Git Submodule:**
-
-See [SETUP_SUBMODULE.md](SETUP_SUBMODULE.md) for detailed instructions. Quick setup:
-
-```bash
-git submodule add https://github.com/kyle-boyd/syncrofy-ds.git design-system
-git submodule update --init --recursive
-git add .gitmodules design-system
-git commit -m "Add design system as git submodule"
-git push
-```
-
-The configuration automatically detects the submodule at `design-system/src`.
+**Note:** If you need to update the design system, copy the latest version from `../syncrofy-ds/src` to `design-system/src` and commit the changes.
 
 **Option 2: Include Design System in Repository**
 

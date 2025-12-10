@@ -29,6 +29,3 @@ dist-ssr
 .env.production.local
 .env.development.local
 
-# Generated design system copy (created during build)
-design-system/
-
