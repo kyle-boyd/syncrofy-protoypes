@@ -2,6 +2,13 @@
 
 This repository contains prototype web applications built using the Syncrofy Design System.
 
+> 📖 **Workflow Guide**: See [WORKFLOW.md](./WORKFLOW.md) for detailed instructions on:
+> - Viewing changes locally in both DS and prototypes
+> - Syncing changes from DS to prototypes locally
+> - Publishing design system updates to npm
+> - Deploying prototypes to Vercel
+> - Common workflows and troubleshooting
+
 ## Overview
 
 This project uses the Syncrofy Design System published as `@syncrofy/design-system` on npm. The design system provides a comprehensive set of React components built on Material UI with custom theming.
