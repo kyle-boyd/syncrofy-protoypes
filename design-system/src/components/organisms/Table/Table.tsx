@@ -10,7 +10,7 @@ import { BaseComponentProps } from '@/types';
 
 export interface TableColumn<T = any> {
   id: string;
-  label: string;
+  label: string | React.ReactNode;
   align?: 'left' | 'right' | 'center';
   render?: (row: T) => React.ReactNode;
   minWidth?: number;
@@ -50,6 +50,18 @@ export interface TableProps<T = any> extends BaseComponentProps {
    * Size of the table cells
    */
   size?: 'small' | 'medium';
+  /**
+   * Elevation of the table paper
+   */
+  elevation?: number;
+  /**
+   * Additional sx styles for the container
+   */
+  sx?: any;
+  /**
+   * Callback fired when a row is clicked
+   */
+  onRowClick?: (row: T) => void;
 }
 
 /**
@@ -67,6 +79,9 @@ export function Table<T = any>({
   bordered = false,
   striped = false,
   size = 'medium',
+  elevation = 0,
+  sx,
+  onRowClick,
 }: TableProps<T>) {
   const getRowKey = (row: T, index: number): string | number => {
     if (getRowId) {
@@ -80,9 +95,19 @@ export function Table<T = any>({
       component={MuiPaper}
       className={className}
       data-testid={testId}
-      sx={{ maxHeight: maxHeight }}
+      elevation={elevation}
+      sx={{ maxHeight: maxHeight, ...sx }}
     >
-      <MuiTable stickyHeader={stickyHeader} size={size} sx={{ borderCollapse: bordered ? 'separate' : 'collapse' }}>
+      <MuiTable
+        stickyHeader={stickyHeader}
+        size={size}
+        sx={{
+          borderCollapse: bordered ? 'separate' : 'collapse',
+          '& .MuiTableCell-body': {
+            padding: '8px 16px !important',
+          }
+        }}
+      >
         <MuiTableHead>
           <MuiTableRow>
             {columns.map((column) => (
@@ -93,6 +118,12 @@ export function Table<T = any>({
                 sx={{
                   borderRight: bordered ? '1px solid' : 'none',
                   borderColor: 'divider',
+                  backgroundColor: '#F3F4F6 !important', // grey.100 for better visibility
+                  paddingY: '20px !important',
+                  '& .MuiTypography-root': {
+                    color: 'text.secondary',
+                    fontWeight: 700,
+                  }
                 }}
               >
                 {column.label}
@@ -104,17 +135,27 @@ export function Table<T = any>({
           {rows.map((row, index) => (
             <MuiTableRow
               key={getRowKey(row, index)}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
               sx={{
                 backgroundColor: striped && index % 2 === 1 ? 'action.hover' : 'transparent',
+                cursor: onRowClick ? 'pointer' : 'default',
+                '&:hover': onRowClick ? {
+                  backgroundColor: 'action.hover',
+                } : {},
               }}
             >
               {columns.map((column) => (
                 <MuiTableCell
                   key={column.id}
                   align={column.align || 'left'}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#FFFFFF',
+                  }}
                   sx={{
                     borderRight: bordered ? '1px solid' : 'none',
                     borderColor: 'divider',
+                    paddingY: '8px !important',
                   }}
                 >
                   {column.render ? column.render(row) : (row as any)[column.id]}

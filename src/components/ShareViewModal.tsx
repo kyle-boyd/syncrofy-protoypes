@@ -5,13 +5,7 @@ import {
   Stack,
   List,
 } from '@mui/material';
-import { Modal } from '@ds/components/organisms/Modal';
-import { Button } from '@ds/components/atoms/Button';
-import { Input } from '@ds/components/atoms/Input';
-import { Avatar } from '@ds/components/atoms/Avatar';
-import { Divider } from '@ds/components/atoms/Divider';
-import { Chips } from '@ds/components/atoms/Chips';
-import { ListItem } from '@ds/components/molecules/ListItem';
+import { Modal, Button, Input, Avatar, Divider, Chips, ListItem } from '@syncrofy/design-system';
 
 export interface User {
   id: string;

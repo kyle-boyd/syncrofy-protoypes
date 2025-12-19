@@ -8,7 +8,7 @@ export const components: ThemeOptions['components'] = {
     defaultProps: {
       disableElevation: false,
     },
-    styleOverrides: (theme) => ({
+    styleOverrides: {
       root: {
         fontFamily: 'Geist, sans-serif',
         borderRadius: 8,
@@ -18,16 +18,75 @@ export const components: ThemeOptions['components'] = {
         transition: 'background 0.15s, color 0.15s, border 0.15s, box-shadow 0.15s',
         fontSize: '0.9375rem',
       },
-      contained: {
+      containedPrimary: ({ theme }) => ({
         backgroundColor: theme.palette.primary.main,
         color: theme.palette.primary.contrastText,
-        boxShadow: theme.shadows[1], // use elevation-1
         '&:hover': {
           backgroundColor: theme.palette.primary.dark,
+        },
+      }),
+      containedSecondary: ({ theme }) => ({
+        backgroundColor: theme.palette.secondary.main,
+        color: theme.palette.secondary.contrastText,
+        '&:hover': {
+          backgroundColor: theme.palette.secondary.dark,
+        },
+      }),
+      containedError: ({ theme }) => ({
+        backgroundColor: theme.palette.error.main,
+        color: theme.palette.error.contrastText,
+        '&:hover': {
+          backgroundColor: theme.palette.error.dark,
+        },
+      }),
+      outlinedPrimary: ({ theme }) => ({
+        border: `1.5px solid ${theme.palette.primary.main}`,
+        color: theme.palette.primary.main,
+        '&:hover': {
+          borderColor: theme.palette.primary.dark,
+          color: theme.palette.primary.dark,
+        },
+      }),
+      outlinedSecondary: ({ theme }) => ({
+        border: `1.5px solid ${theme.palette.secondary.main}`,
+        color: theme.palette.secondary.main,
+        '&:hover': {
+          borderColor: theme.palette.secondary.dark,
+          color: theme.palette.secondary.dark,
+        },
+      }),
+      outlinedError: ({ theme }) => ({
+        border: `1.5px solid ${theme.palette.error.main}`,
+        color: theme.palette.error.main,
+        '&:hover': {
+          borderColor: theme.palette.error.dark,
+          color: theme.palette.error.dark,
+        },
+      }),
+      textPrimary: ({ theme }) => ({
+        color: theme.palette.primary.main,
+        '&:hover': {
+          color: theme.palette.primary.dark,
+        },
+      }),
+      textSecondary: ({ theme }) => ({
+        color: theme.palette.secondary.main,
+        '&:hover': {
+          color: theme.palette.secondary.dark,
+        },
+      }),
+      textError: ({ theme }) => ({
+        color: theme.palette.error.main,
+        '&:hover': {
+          color: theme.palette.error.dark,
+        },
+      }),
+      contained: ({ theme }) => ({
+        boxShadow: theme.shadows[1],
+        '&:hover': {
           boxShadow: theme.shadows[1],
         },
         '&:active': {
-          backgroundColor: theme.palette.primary.dark,
           boxShadow: theme.shadows[1],
         },
         '&.Mui-disabled': {
@@ -35,16 +94,12 @@ export const components: ThemeOptions['components'] = {
           color: theme.palette.text.disabled,
           boxShadow: theme.shadows[1],
         }
-      },
-      outlined: {
-        border: `1.5px solid ${theme.palette.primary.main}`,
-        color: theme.palette.primary.main,
+      }),
+      outlined: ({ theme }) => ({
         backgroundColor: 'transparent',
-        boxShadow: theme.shadows[1], // use elevation-1
+        boxShadow: theme.shadows[1],
         '&:hover': {
           backgroundColor: theme.palette.action.hover,
-          borderColor: theme.palette.primary.dark,
-          color: theme.palette.primary.dark,
           boxShadow: theme.shadows[1],
         },
         '&:active': {
@@ -56,12 +111,10 @@ export const components: ThemeOptions['components'] = {
           color: theme.palette.text.disabled,
           boxShadow: theme.shadows[1],
         },
-      },
-      text: {
-        color: theme.palette.primary.main,
+      }),
+      text: ({ theme }) => ({
         '&:hover': {
           backgroundColor: theme.palette.action.hover,
-          color: theme.palette.primary.dark,
         },
         '&:active': {
           backgroundColor: theme.palette.action.selected,
@@ -69,7 +122,7 @@ export const components: ThemeOptions['components'] = {
         '&.Mui-disabled': {
           color: theme.palette.text.disabled,
         }
-      },
+      }),
       sizeSmall: {
         padding: '6px 16px',
         fontSize: '0.8125rem',
@@ -78,7 +131,7 @@ export const components: ThemeOptions['components'] = {
         padding: '12px 32px',
         fontSize: '1.05rem',
       },
-    }),
+    },
   },
   MuiTextField: {
     styleOverrides: {
@@ -90,8 +143,8 @@ export const components: ThemeOptions['components'] = {
     },
   },
   MuiOutlinedInput: {
-    styleOverrides: (theme) => ({
-      root: {
+    styleOverrides: {
+      root: ({ theme }) => ({
         borderRadius: 8,
         backgroundColor: theme.palette.background.default,
         fontSize: '14px',
@@ -112,12 +165,12 @@ export const components: ThemeOptions['components'] = {
             borderColor: theme.palette.grey[300],
           },
         },
-      },
-      notchedOutline: {
+      }),
+      notchedOutline: ({ theme }) => ({
         borderColor: theme.palette.grey[400],
         borderWidth: '1px',
-      },
-      input: {
+      }),
+      input: ({ theme }) => ({
         padding: '10px 14px',
         fontSize: '14px',
         lineHeight: '20px',
@@ -125,12 +178,12 @@ export const components: ThemeOptions['components'] = {
           color: theme.palette.text.disabled,
           opacity: 1,
         },
-      },
-    }),
+      }),
+    },
   },
   MuiInputLabel: {
-    styleOverrides: (theme) => ({
-      root: {
+    styleOverrides: {
+      root: ({ theme }) => ({
         fontSize: '14px',
         fontFamily: 'Geist, sans-serif',
         fontWeight: 700,
@@ -142,7 +195,7 @@ export const components: ThemeOptions['components'] = {
         '&.Mui-error': {
           color: theme.palette.text.primary,
         },
-      },
+      }),
       outlined: {
         transform: 'translate(0, 0) scale(1)',
         position: 'static',
@@ -152,11 +205,11 @@ export const components: ThemeOptions['components'] = {
         transform: 'translate(0, 0) scale(1)',
         position: 'static',
       },
-    }),
+    },
   },
   MuiFormHelperText: {
-    styleOverrides: (theme) => ({
-      root: {
+    styleOverrides: {
+      root: ({ theme }) => ({
         marginTop: '4px',
         marginLeft: 0,
         fontSize: '14px',
@@ -169,8 +222,8 @@ export const components: ThemeOptions['components'] = {
           alignItems: 'center',
           gap: '8px',
         },
-      },
-    }),
+      }),
+    },
   },
   MuiCard: {
     styleOverrides: {

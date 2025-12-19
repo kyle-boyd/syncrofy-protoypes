@@ -4,7 +4,9 @@ This repository contains prototype web applications built using the Syncrofy Des
 
 ## Overview
 
-This project is set up to use components and design tokens from the local Syncrofy Design System located at `../syncrofy-ds`. The design system provides a comprehensive set of React components built on Material UI with custom theming.
+This project uses the Syncrofy Design System published as `@syncrofy/design-system` on npm. The design system provides a comprehensive set of React components built on Material UI with custom theming.
+
+For information on updating the design system, see [DESIGN_SYSTEM_PUBLISHING.md](./DESIGN_SYSTEM_PUBLISHING.md).
 
 ## Getting Started
 
@@ -15,7 +17,7 @@ This project is set up to use components and design tokens from the local Syncro
 
 ### Installation
 
-1. Install dependencies:
+1. Install dependencies (this includes the design system package):
 ```bash
 npm install
 ```
@@ -60,11 +62,10 @@ syncrofy-protoypes/
 
 ## Using Design System Components
 
-Components from the design system can be imported using the `@ds` alias:
+Components from the design system can be imported from the npm package:
 
 ```tsx
-import { Button, Input, Modal } from '@ds/components/atoms/Button';
-import { theme } from '@ds/theme';
+import { Button, Input, Modal, theme } from '@syncrofy/design-system';
 ```
 
 The design system is organized using atomic design principles:
@@ -117,7 +118,7 @@ Example:
 ```tsx
 import React from 'react';
 import { Container, Typography } from '@mui/material';
-import { Button } from '@/ds/components/atoms/Button';
+import { Button } from '@syncrofy/design-system';
 
 function MyPrototype() {
   return (
@@ -139,16 +140,13 @@ This project is configured for easy deployment to Vercel. The `vercel.json` file
 
 #### Prerequisites for Vercel Deployment
 
-The design system is included directly in this repository at `design-system/src`. This means:
+The design system is now consumed as an npm package (`@syncrofy/design-system`). This means:
 - ✅ No authentication needed
 - ✅ Works immediately on Vercel
 - ✅ No submodule setup required
+- ✅ Automatic dependency management via npm
 
-**Note:** If you need to update the design system, copy the latest version from `../syncrofy-ds/src` to `design-system/src` and commit the changes.
-
-**Option 2: Include Design System in Repository**
-
-Copy the design system into this repository so it's available during builds.
+**Note:** To update the design system, simply update the version in `package.json` and run `npm install`. See [DESIGN_SYSTEM_PUBLISHING.md](./DESIGN_SYSTEM_PUBLISHING.md) for details.
 
 #### Deployment Steps
 

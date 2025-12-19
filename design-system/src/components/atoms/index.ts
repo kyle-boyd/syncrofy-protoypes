@@ -59,6 +59,9 @@ export type { SpinnerProps } from './Spinner';
 export { Toggle } from './Toggle';
 export type { ToggleProps } from './Toggle';
 
+export { Tag } from './Tag';
+export type { TagProps } from './Tag';
+
 export { Tooltip } from './Tooltip';
 export type { TooltipProps } from './Tooltip';
 

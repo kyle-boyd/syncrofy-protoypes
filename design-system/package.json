@@ -1,0 +1,73 @@
+{
+  "name": "@syncrofy/design-system",
+  "version": "0.1.8",
+  "description": "Syncrofy Design System - Material UI-based component library following atomic design principles",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./components": {
+      "import": "./dist/components.js",
+      "types": "./dist/components.d.ts",
+      "default": "./dist/components.js"
+    },
+    "./theme": {
+      "import": "./dist/theme.js",
+      "types": "./dist/theme.d.ts",
+      "default": "./dist/theme.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "vite build && tsc --emitDeclarationOnly --outDir dist",
+    "build:check": "tsc --noEmit && vite build",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "design-system",
+    "react",
+    "mui",
+    "material-ui",
+    "components",
+    "syncrofy"
+  ],
+  "author": "",
+  "license": "ISC",
+  "peerDependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.5",
+    "@mui/lab": "^7.0.1-beta.19",
+    "@mui/material": "^7.3.5",
+    "@mui/x-date-pickers": "^8.19.0",
+    "framer-motion": "^12.23.25",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.4",
+    "vite-plugin-dts": "^4.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kyle-boyd/syncrofy-ds.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
+
+

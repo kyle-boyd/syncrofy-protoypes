@@ -1,12 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Box, Typography, Stack, Paper } from '@mui/material';
-import { Button } from '@ds/components/atoms/Button';
-import { Input } from '@ds/components/atoms/Input';
-import { Badge } from '@ds/components/atoms/Badge';
-import { Tag } from '@ds/components/atoms/Tag';
-import { Checkbox } from '@ds/components/atoms/Checkbox';
-import { Radio } from '@ds/components/atoms/Radio';
+import { Button, Input, Badge, Tag, Checkbox, Radio } from '@syncrofy/design-system';
 import { ShareViewModal, User } from '../components/ShareViewModal';
 import { RawEventsModal } from '../components/RawEventsModal';
 

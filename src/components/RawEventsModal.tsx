@@ -4,7 +4,6 @@ import {
   Box,
   Stack,
   IconButton,
-  Toolbar,
   Alert,
   CircularProgress,
   Dialog,
@@ -12,7 +11,7 @@ import {
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
-import { Button } from '@ds/components/atoms/Button';
+import { Button } from '@syncrofy/design-system';
 
 interface RawEventsModalProps {
   open: boolean;
@@ -308,39 +307,6 @@ export function RawEventsModal({
           </IconButton>
         </Box>
 
-        {/* Toolbar */}
-        <Toolbar
-          variant="dense"
-          sx={{
-            borderBottom: 1,
-            borderColor: 'divider',
-            minHeight: '48px !important',
-            justifyContent: 'flex-end',
-            position: 'sticky',
-            top: 0,
-            backgroundColor: 'background.paper',
-            zIndex: 1,
-          }}
-        >
-          <Stack direction="row" spacing={1} alignItems="center">
-            {copySuccess && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'success.main' }}>
-                <CheckIcon fontSize="small" />
-                <Typography variant="body2">Copied!</Typography>
-              </Box>
-            )}
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<ContentCopyIcon />}
-              onClick={handleCopyJson}
-              disabled={!events || events.length === 0}
-            >
-              Copy JSON
-            </Button>
-          </Stack>
-        </Toolbar>
-
         {/* Content */}
         <Box sx={{ flex: 1, overflow: 'auto', p: 2, minHeight: 0 }}>
           {loading && (
@@ -385,16 +351,34 @@ export function RawEventsModal({
           )}
         </Box>
 
-        {/* Footer with Close Button */}
+        {/* Footer with Copy JSON and Close Button */}
         <Box
           sx={{
             display: 'flex',
-            justifyContent: 'flex-end',
+            justifyContent: 'space-between',
+            alignItems: 'center',
             p: 2,
             borderTop: 1,
             borderColor: 'divider',
           }}
         >
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<ContentCopyIcon />}
+              onClick={handleCopyJson}
+              disabled={!events || events.length === 0}
+            >
+              Copy JSON
+            </Button>
+            {copySuccess && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'success.main' }}>
+                <CheckIcon fontSize="small" />
+                <Typography variant="body2">Copied!</Typography>
+              </Box>
+            )}
+          </Stack>
           <Button
             variant="contained"
             onClick={onClose}

@@ -60,7 +60,7 @@ export const palette: PaletteOptions = {
     disabled: '#9CA3AF',
   },
   background: {
-    default: '#FFFFFF',
+    default: '#FAFCFC',
     paper: '#FFFFFF',
   },
   divider: '#E5E7EB',

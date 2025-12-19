@@ -1,9 +1,10 @@
 import React from 'react';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { theme } from '@ds/theme';
+import { theme } from '@syncrofy/design-system';
 import Home from './pages/Home';
 import TransferDetails from './pages/TransferDetails';
+import Transfers from './pages/Transfers';
 
 function App() {
   return (
@@ -12,7 +13,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/transfers/:id?" element={<TransferDetails />} />
+          <Route path="/transfers" element={<Transfers />} />
+          <Route path="/transfers/:id" element={<TransferDetails />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

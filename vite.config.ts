@@ -1,16 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import { existsSync } from 'fs';
-import { designSystemAlias } from './vite-plugin-ds-alias';
+import { fileURLToPath } from 'url';
 
-// Determine design system path - prefer submodule, then local copy, then relative path for dev
-const submoduleDsPath = path.resolve(__dirname, './design-system/src');
-const localDsPath = path.resolve(__dirname, './design-system');
-const relativeDsPath = path.resolve(__dirname, '../syncrofy-ds/src');
-const designSystemPath = existsSync(submoduleDsPath) 
-  ? submoduleDsPath 
-  : (existsSync(localDsPath) ? localDsPath : relativeDsPath);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -19,20 +12,26 @@ export default defineConfig({
       jsxRuntime: 'automatic',
       include: /\.(tsx?|jsx?)$/,
     }),
-    designSystemAlias(),
   ],
   resolve: {
     alias: {
       // Our project's src alias
       '@': path.resolve(__dirname, './src'),
-      // Design system alias - use this to import from design system
-      '@ds': designSystemPath,
       // Force single React instance to prevent "Invalid hook call" errors
       'react': path.resolve(__dirname, './node_modules/react'),
       'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
       // Force single emotion instance to prevent styling issues
       '@emotion/react': path.resolve(__dirname, './node_modules/@emotion/react'),
       '@emotion/styled': path.resolve(__dirname, './node_modules/@emotion/styled'),
+      // Resolve design-system package to ensure proper resolution
+      '@syncrofy/design-system': path.resolve(__dirname, './design-system'),
+    },
+    preserveSymlinks: true,
+    dedupe: ['react', 'react-dom'],
+  },
+  server: {
+    fs: {
+      allow: ['..'],
     },
   },
   optimizeDeps: {
@@ -47,6 +46,7 @@ export default defineConfig({
       '@emotion/styled',
       'framer-motion',
     ],
+    exclude: ['@syncrofy/design-system'],
   },
   esbuild: {
     jsx: 'automatic',
