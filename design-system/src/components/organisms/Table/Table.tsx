@@ -96,7 +96,14 @@ export function Table<T = any>({
       className={className}
       data-testid={testId}
       elevation={elevation}
-      sx={{ maxHeight: maxHeight, ...sx }}
+      sx={{ 
+        maxHeight: maxHeight,
+        ...(bordered && {
+          border: '1px solid',
+          borderColor: 'divider',
+        }),
+        ...sx 
+      }}
     >
       <MuiTable
         stickyHeader={stickyHeader}
@@ -110,16 +117,18 @@ export function Table<T = any>({
       >
         <MuiTableHead>
           <MuiTableRow>
-            {columns.map((column) => (
+            {columns.map((column, index) => (
               <MuiTableCell
                 key={column.id}
                 align={column.align || 'left'}
                 style={{ minWidth: column.minWidth, width: column.width }}
                 sx={{
                   borderRight: bordered ? '1px solid' : 'none',
+                  borderTop: bordered ? '1px solid' : 'none',
+                  borderLeft: bordered && index === 0 ? '1px solid' : 'none',
                   borderColor: 'divider',
                   backgroundColor: '#F3F4F6 !important', // grey.100 for better visibility
-                  paddingY: '20px !important',
+                  padding: '8px 16px !important',
                   '& .MuiTypography-root': {
                     color: 'text.secondary',
                     fontWeight: 700,
@@ -141,21 +150,30 @@ export function Table<T = any>({
                 cursor: onRowClick ? 'pointer' : 'default',
                 '&:hover': onRowClick ? {
                   backgroundColor: 'action.hover',
+                  '& .MuiTableCell-root': {
+                    backgroundColor: 'transparent',
+                  },
                 } : {},
+                '& .MuiTableCell-root': {
+                  backgroundColor: 'transparent',
+                },
               }}
             >
-              {columns.map((column) => (
+              {columns.map((column, colIndex) => (
                 <MuiTableCell
                   key={column.id}
                   align={column.align || 'left'}
                   style={{
-                    padding: '8px 16px',
-                    backgroundColor: '#FFFFFF',
+                    minWidth: column.minWidth,
+                    width: column.width,
                   }}
                   sx={{
                     borderRight: bordered ? '1px solid' : 'none',
+                    borderLeft: bordered && colIndex === 0 ? '1px solid' : 'none',
+                    borderBottom: bordered ? '1px solid' : 'none',
                     borderColor: 'divider',
-                    paddingY: '8px !important',
+                    padding: '8px 16px !important',
+                    backgroundColor: 'transparent',
                   }}
                 >
                   {column.render ? column.render(row) : (row as any)[column.id]}

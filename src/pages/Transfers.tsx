@@ -1,23 +1,22 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
-  Typography,
   Stack,
+  Typography,
+  TableSortLabel,
 } from '@mui/material';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import {
-  Table,
-  TableColumn,
-  Tag,
   PageHeader,
   ViewControls,
   FilterControls,
-  FilterOption
+  FilterOption,
+  Table,
+  TableColumn,
+  Tag,
 } from '@kyleboyd/design-system';
 import { PageLayout } from '../components/PageLayout';
 
@@ -203,75 +202,24 @@ const mockTransfers: Transfer[] = [
   },
 ];
 
-type SortColumn = keyof Transfer | '';
-type SortDirection = 'asc' | 'desc';
-
-// Default column widths
-const defaultColumnWidths: Record<string, number> = {
-  id: 180,
-  sender: 180,
-  receiver: 180,
-  direction: 120,
-  senderFileName: 220,
-  senderFileSize: 120,
-  status: 100,
-  startTime: 150,
-  endTime: 150,
-};
-
 function Transfers() {
   const navigate = useNavigate();
-
   // State management
   const [selectedView, setSelectedView] = useState<string>('default');
   const [isViewFavorited, setIsViewFavorited] = useState(false);
   const [senderReceiverFilter, setSenderReceiverFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [sortColumn, setSortColumn] = useState<SortColumn>('startTime');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [searchValue, setSearchValue] = useState('');
-  const [columnWidths, setColumnWidths] = useState<Record<string, number>>(defaultColumnWidths);
-
-  // Column resize state
-  const resizingColumnRef = useRef<string | null>(null);
-  const startXRef = useRef<number>(0);
-  const startWidthRef = useRef<number>(0);
-
-  // Handle column resize
-  const handleResizeStart = useCallback((columnId: string, event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    resizingColumnRef.current = columnId;
-    startXRef.current = event.clientX;
-    startWidthRef.current = columnWidths[columnId] || defaultColumnWidths[columnId] || 150;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!resizingColumnRef.current) return;
-      
-      const deltaX = e.clientX - startXRef.current;
-      const newWidth = Math.max(80, startWidthRef.current + deltaX); // Minimum 80px width
-      
-      setColumnWidths(prev => ({
-        ...prev,
-        [resizingColumnRef.current!]: newWidth,
-      }));
-    };
-
-    const handleMouseUp = () => {
-      resizingColumnRef.current = null;
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-  }, [columnWidths]);
+  const [sortField, setSortField] = useState<string>('');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  
+  // Column resizing state
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
+  const [resizingColumn, setResizingColumn] = useState<string | null>(null);
+  const [resizeStartX, setResizeStartX] = useState(0);
+  const [resizeStartWidth, setResizeStartWidth] = useState(0);
+  const tableRef = useRef<HTMLDivElement>(null);
 
   // Get unique senders and receivers for filter options
   const allSenders = useMemo(() => {
@@ -311,38 +259,157 @@ function Transfers() {
     }
 
     // Apply sorting
-    if (sortColumn) {
+    if (sortField) {
       filtered.sort((a, b) => {
-        const aVal = a[sortColumn];
-        const bVal = b[sortColumn];
+        let aValue: any = a[sortField as keyof Transfer];
+        let bValue: any = b[sortField as keyof Transfer];
 
-        if (aVal === bVal) return 0;
-
-        if (typeof aVal === 'string' && typeof bVal === 'string') {
-          const comparison = aVal.localeCompare(bVal);
-          return sortDirection === 'asc' ? comparison : -comparison;
+        // Handle special cases
+        if (sortField === 'startTime' || sortField === 'endTime') {
+          // Parse date strings for comparison (simple string comparison works for this format)
+          aValue = aValue === '-' ? '' : aValue;
+          bValue = bValue === '-' ? '' : bValue;
+        } else if (sortField === 'senderFileSize') {
+          // Parse file sizes (convert to bytes for comparison)
+          const parseSize = (size: string): number => {
+            const match = size.match(/([\d.]+)\s*(KB|MB|GB)?/i);
+            if (!match) return 0;
+            const num = parseFloat(match[1]);
+            const unit = match[2]?.toUpperCase() || 'B';
+            if (unit === 'KB') return num * 1024;
+            if (unit === 'MB') return num * 1024 * 1024;
+            if (unit === 'GB') return num * 1024 * 1024 * 1024;
+            return num;
+          };
+          aValue = parseSize(aValue);
+          bValue = parseSize(bValue);
+        } else {
+          // String comparison for other fields
+          aValue = String(aValue || '').toLowerCase();
+          bValue = String(bValue || '').toLowerCase();
         }
 
-        const comparison = aVal < bVal ? -1 : 1;
-        return sortDirection === 'asc' ? comparison : -comparison;
+        if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
       });
     }
 
     return filtered;
-  }, [searchValue, senderReceiverFilter, statusFilter, sortColumn, sortDirection]);
+  }, [searchValue, senderReceiverFilter, statusFilter, sortField, sortDirection]);
 
-  const handleSort = (column: keyof Transfer) => {
-    if (sortColumn === column) {
+  // Handle sort
+  const handleSort = (field: string) => {
+    if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      setSortColumn(column);
-      setSortDirection('desc');
+      setSortField(field);
+      setSortDirection('asc');
     }
   };
 
-  const handleRowClick = (transfer: Transfer) => {
-    navigate(`/transfers/${transfer.id}`);
-  };
+  // Column resizing handlers
+  const handleResizeStart = useCallback((columnId: string, startX: number) => {
+    // Get current width from state or use default
+    let currentWidth = columnWidths[columnId];
+    if (!currentWidth) {
+      // Default widths for each column
+      const defaultWidths: Record<string, number> = {
+        id: 200,
+        sender: 200,
+        receiver: 200,
+        direction: 120,
+        senderFileName: 250,
+        senderFileSize: 130,
+        status: 100,
+        startTime: 180,
+        endTime: 180,
+      };
+      currentWidth = defaultWidths[columnId] || 200;
+    }
+    setResizingColumn(columnId);
+    setResizeStartX(startX);
+    setResizeStartWidth(currentWidth);
+  }, [columnWidths]);
+
+  const handleResizeMove = useCallback((currentX: number) => {
+    if (!resizingColumn) return;
+    const diff = currentX - resizeStartX;
+    const newWidth = Math.max(50, resizeStartWidth + diff); // Minimum width of 50px
+    setColumnWidths(prev => ({
+      ...prev,
+      [resizingColumn]: newWidth,
+    }));
+  }, [resizingColumn, resizeStartX, resizeStartWidth]);
+
+  const handleResizeEnd = useCallback(() => {
+    setResizingColumn(null);
+  }, []);
+
+  // Mouse event handlers for resizing
+  useEffect(() => {
+    if (!resizingColumn) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      handleResizeMove(e.clientX);
+    };
+
+    const handleMouseUp = () => {
+      handleResizeEnd();
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [resizingColumn, handleResizeMove, handleResizeEnd]);
+
+  // Measure header cell positions for accurate resize handle placement
+  const [headerPositions, setHeaderPositions] = useState<Record<string, { left: number; width: number }>>({});
+  
+  // Column IDs in order - defined before columns to avoid dependency issues
+  const columnIds = useMemo(() => [
+    'id', 'sender', 'receiver', 'direction', 'senderFileName', 
+    'senderFileSize', 'status', 'startTime', 'endTime'
+  ], []);
+  
+  useEffect(() => {
+    if (!tableRef.current) return;
+    
+    const updatePositions = () => {
+      const headerCells = tableRef.current?.querySelectorAll('.MuiTableCell-head');
+      if (!headerCells) return;
+      
+      const positions: Record<string, { left: number; width: number }> = {};
+      headerCells.forEach((cell, index) => {
+        const rect = cell.getBoundingClientRect();
+        const tableRect = tableRef.current?.getBoundingClientRect();
+        if (tableRect && columnIds[index]) {
+          positions[columnIds[index]] = {
+            left: rect.left - tableRect.left,
+            width: rect.width,
+          };
+        }
+      });
+      setHeaderPositions(positions);
+    };
+    
+    // Use a small delay to ensure table is rendered
+    const timeoutId = setTimeout(updatePositions, 0);
+    window.addEventListener('resize', updatePositions);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', updatePositions);
+    };
+  }, [columnIds, columnWidths, filteredAndSortedTransfers.length]);
 
   const filterOptions: FilterOption[] = [
     {
@@ -375,114 +442,254 @@ function Transfers() {
     },
   ];
 
-  // Table columns configuration
-  const columns: TableColumn<Transfer>[] = [
+  // Table columns configuration with dynamic widths
+  const columns: TableColumn<Transfer>[] = useMemo(() => [
     {
       id: 'id',
-      label: 'Transfer ID',
-      minWidth: 180,
-      render: (row) => <Typography variant="body2" sx={{ color: 'text.secondary' }}>{row.id}</Typography>,
+      label: (
+        <TableSortLabel
+          active={sortField === 'id'}
+          direction={sortField === 'id' ? sortDirection : 'asc'}
+          onClick={() => handleSort('id')}
+        >
+          Transfer ID
+        </TableSortLabel>
+      ),
+      minWidth: 200,
+      width: columnWidths.id || undefined,
+      render: (row: Transfer) => (
+        <Typography
+          variant="body2"
+          sx={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {row.id}
+        </Typography>
+      ),
     },
     {
       id: 'sender',
-      label: 'Sender',
-      minWidth: 150,
-      render: (row) => <Typography variant="body2">{row.sender}</Typography>,
+      label: (
+        <TableSortLabel
+          active={sortField === 'sender'}
+          direction={sortField === 'sender' ? sortDirection : 'asc'}
+          onClick={() => handleSort('sender')}
+        >
+          Sender
+        </TableSortLabel>
+      ),
+      minWidth: 200,
+      width: columnWidths.sender || undefined,
+      render: (row: Transfer) => (
+        <Typography
+          variant="body2"
+          sx={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {row.sender}
+        </Typography>
+      ),
     },
     {
       id: 'receiver',
-      label: 'Receiver',
-      minWidth: 150,
-      render: (row) => <Typography variant="body2">{row.receiver}</Typography>,
+      label: (
+        <TableSortLabel
+          active={sortField === 'receiver'}
+          direction={sortField === 'receiver' ? sortDirection : 'asc'}
+          onClick={() => handleSort('receiver')}
+        >
+          Receiver
+        </TableSortLabel>
+      ),
+      minWidth: 200,
+      width: columnWidths.receiver || undefined,
+      render: (row: Transfer) => (
+        <Typography
+          variant="body2"
+          sx={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {row.receiver}
+        </Typography>
+      ),
     },
     {
       id: 'direction',
-      label: 'Direction',
+      label: (
+        <TableSortLabel
+          active={sortField === 'direction'}
+          direction={sortField === 'direction' ? sortDirection : 'asc'}
+          onClick={() => handleSort('direction')}
+        >
+          Direction
+        </TableSortLabel>
+      ),
       minWidth: 120,
-      render: (row) => {
-        if (row.direction === 'Inbound') {
-          return (
-            <Tag
-              variant="info"
-              label="Inbound"
-              size="small"
-              icon={<AddCircleIcon sx={{ fontSize: 16 }} />}
-            />
-          );
-        }
-        if (row.direction === 'Outbound') {
-          return (
-            <Tag
-              variant="warning"
-              label="Outbound"
-              size="small"
-              icon={<ArrowCircleUpIcon sx={{ fontSize: 16 }} />}
-            />
-          );
-        }
+      width: columnWidths.direction || undefined,
+      render: (row: Transfer) => {
+        const directionConfig: Record<Transfer['direction'], { icon: typeof ArrowUpwardIcon; variant: 'warning' | 'primary' | 'neutral' }> = {
+          Outbound: { icon: ArrowUpwardIcon, variant: 'warning' as const },
+          Inbound: { icon: ArrowDownwardIcon, variant: 'primary' as const },
+          Unknown: { icon: HelpOutlineIcon, variant: 'neutral' as const },
+        };
+        const config = directionConfig[row.direction];
+        const IconComponent = config.icon;
         return (
           <Tag
-            variant="neutral"
-            label="Unknown"
+            label={row.direction}
+            variant={config.variant}
+            icon={<IconComponent />}
             size="small"
-            icon={<HelpOutlineIcon sx={{ fontSize: 16 }} />}
           />
         );
       },
     },
     {
       id: 'senderFileName',
-      label: 'Sender File Name',
-      minWidth: 200,
-      render: (row) => <Typography variant="body2">{row.senderFileName}</Typography>,
+      label: (
+        <TableSortLabel
+          active={sortField === 'senderFileName'}
+          direction={sortField === 'senderFileName' ? sortDirection : 'asc'}
+          onClick={() => handleSort('senderFileName')}
+        >
+          Sender File Name
+        </TableSortLabel>
+      ),
+      minWidth: 250,
+      width: columnWidths.senderFileName || undefined,
+      render: (row: Transfer) => (
+        <Typography
+          variant="body2"
+          sx={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {row.senderFileName}
+        </Typography>
+      ),
     },
     {
       id: 'senderFileSize',
-      label: 'Sender File Size',
-      minWidth: 120,
-      render: (row) => <Typography variant="body2">{row.senderFileSize}</Typography>,
+      label: (
+        <TableSortLabel
+          active={sortField === 'senderFileSize'}
+          direction={sortField === 'senderFileSize' ? sortDirection : 'asc'}
+          onClick={() => handleSort('senderFileSize')}
+        >
+          Sender File Size
+        </TableSortLabel>
+      ),
+      minWidth: 130,
+      width: columnWidths.senderFileSize || undefined,
+      render: (row: Transfer) => (
+        <Typography
+          variant="body2"
+          sx={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {row.senderFileSize}
+        </Typography>
+      ),
     },
     {
       id: 'status',
-      label: 'Status',
-      minWidth: 120,
-      render: (row) => (
-        <Tag
-          variant={row.status === 'Success' ? 'success' : 'error'}
-          label={row.status}
-          size="small"
-          hideIcon
-        />
+      label: (
+        <TableSortLabel
+          active={sortField === 'status'}
+          direction={sortField === 'status' ? sortDirection : 'asc'}
+          onClick={() => handleSort('status')}
+        >
+          Status
+        </TableSortLabel>
       ),
+      minWidth: 100,
+      width: columnWidths.status || undefined,
+      render: (row: Transfer) => {
+        return (
+          <Tag
+            label={row.status}
+            variant={row.status === 'Success' ? 'success' : 'error'}
+            size="small"
+          />
+        );
+      },
     },
     {
       id: 'startTime',
-      label: 'Start (MST)',
-      minWidth: 150,
-      render: () => (
-        <Box>
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>10:52 PM</Typography>
-          <Typography variant="caption" color="text.secondary">Dec 17 2025</Typography>
-        </Box>
+      label: (
+        <TableSortLabel
+          active={sortField === 'startTime'}
+          direction={sortField === 'startTime' ? sortDirection : 'asc'}
+          onClick={() => handleSort('startTime')}
+        >
+          Start (MST)
+        </TableSortLabel>
       ),
+      minWidth: 180,
+      width: columnWidths.startTime || undefined,
+      render: (row: Transfer) => {
+        if (row.startTime === '-') {
+          return <Typography variant="body2">-</Typography>;
+        }
+        const [time, date] = row.startTime.split(', ');
+        return (
+          <Box>
+            <Typography variant="body2">{time}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {date}
+            </Typography>
+          </Box>
+        );
+      },
     },
     {
       id: 'endTime',
-      label: 'End (MST)',
-      minWidth: 150,
-      render: (row) => row.endTime !== '-' ? (
-        <Box>
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>10:52 PM</Typography>
-          <Typography variant="caption" color="text.secondary">Dec 17 2025</Typography>
-        </Box>
-      ) : '-',
+      label: (
+        <TableSortLabel
+          active={sortField === 'endTime'}
+          direction={sortField === 'endTime' ? sortDirection : 'asc'}
+          onClick={() => handleSort('endTime')}
+        >
+          End (MST)
+        </TableSortLabel>
+      ),
+      minWidth: 180,
+      width: columnWidths.endTime || undefined,
+      render: (row: Transfer) => {
+        if (row.endTime === '-') {
+          return <Typography variant="body2">-</Typography>;
+        }
+        const [time, date] = row.endTime.split(', ');
+        return (
+          <Box>
+            <Typography variant="body2">{time}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {date}
+            </Typography>
+          </Box>
+        );
+      },
     },
-  ];
+  ], [sortField, sortDirection, columnWidths]);
 
   return (
     <PageLayout selectedNavItem="transfers" backgroundColor="#FAFCFC">
       {/* Scrollable Header Section */}
-      <Stack spacing={2} sx={{ mb: 2 }}>
+      <Stack spacing={2} sx={{ mb: '16px' }}>
         <PageHeader
           title="Transfers"
           showBreadcrumb={false}
@@ -511,7 +718,7 @@ function Transfers() {
           backgroundColor: '#FAFCFC',
           pt: 3, // Add padding top to compensate for the negative top offset
           pb: 2,
-          mb: 2,
+          mb: '16px',
           mx: -3, // Negative margin to extend to container edges
           px: 3, // Add padding back
         }}
@@ -540,104 +747,128 @@ function Transfers() {
         />
       </Box>
 
-      {/* Data Table with Sticky Header */}
-      <Table
-        elevation={1}
+      {/* Table */}
+      <Box
+        ref={tableRef}
         sx={{
-          backgroundColor: '#FFFFFF !important',
+          borderRadius: '8px',
+          overflow: 'hidden',
           border: '1px solid',
           borderColor: 'divider',
-          borderRadius: '12px',
-          overflow: 'visible',
-          '& .MuiTableContainer-root': {
-            borderRadius: '12px',
-            overflow: 'visible',
-          },
-          '& .MuiTable-root': {
-            tableLayout: 'fixed',
-          },
+          position: 'relative',
+          // Remove vertical grid lines for all cells
           '& .MuiTableCell-root': {
-            paddingTop: '8px',
-            paddingBottom: '8px',
+            borderLeft: 'none !important',
+            borderRight: 'none !important',
+          },
+          // Header cell styles
+          '& .MuiTableCell-head': {
+            fontWeight: 700,
+            color: 'text.secondary',
+            padding: '6px 12px !important',
+            borderTop: 'none !important',
+            borderBottom: 'none !important',
+            borderLeft: 'none !important',
+            borderRight: 'none !important',
+            position: 'relative',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
+            '& > *': {
+              fontWeight: 700,
+              color: 'text.secondary',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              maxWidth: '100%',
+            },
+            // Ensure TableSortLabel and its children truncate properly
+            '& .MuiTableSortLabel-root': {
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              maxWidth: '100%',
+              '& .MuiTableSortLabel-icon': {
+                flexShrink: 0,
+                marginLeft: '4px',
+              },
+            },
           },
-          '& .MuiTableHead-root': {
-            position: 'sticky',
-            top: 120, // Position below the sticky FilterControls (~120px height)
-            zIndex: 10,
+          // Use fixed table layout for accurate column widths
+          '& .MuiTable-root': {
+            tableLayout: 'fixed',
+            width: '100%',
           },
-          '& .MuiTableHead-root .MuiTableCell-root': {
-            backgroundColor: '#F9FAFB !important',
-            position: 'relative',
-            overflow: 'visible',
+          // Body cell styles - horizontal divider lines only
+          '& .MuiTableCell-body': {
+            padding: '6px 12px !important',
+            borderBottom: '1px solid',
+            borderBottomColor: 'divider',
+            borderTop: 'none !important',
+          },
+          // Remove bottom border from last row
+          '& .MuiTableBody-root .MuiTableRow-root:last-child .MuiTableCell-body': {
+            borderBottom: 'none !important',
           },
         }}
-          columns={columns.map(col => ({
-            ...col,
-            width: columnWidths[col.id] || defaultColumnWidths[col.id],
-            minWidth: undefined, // Remove minWidth since we're using explicit width
-            label: (
-              <Box
-                sx={{
-                  position: 'relative',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  cursor: 'pointer',
-                  userSelect: 'none',
-                  pr: 2, // Add padding for resize handle
-                  width: '100%',
-                }}
-                onClick={() => col.id && handleSort(col.id as keyof Transfer)}
-              >
-                <Typography variant="caption" sx={{ textTransform: 'uppercase' }}>
-                  {col.label}
-                </Typography>
-                {sortColumn === col.id && (
-                  sortDirection === 'desc' ? <ArrowDownwardIcon sx={{ fontSize: 14 }} /> : <ArrowUpwardIcon sx={{ fontSize: 14 }} />
-                )}
-                {/* Resize handle */}
-                <Box
-                  onMouseDown={(e) => handleResizeStart(col.id, e)}
-                  onClick={(e) => e.stopPropagation()}
-                  sx={{
-                    position: 'absolute',
-                    right: -4,
-                    top: -10,
-                    bottom: -10,
-                    width: '12px',
-                    cursor: 'col-resize',
-                    backgroundColor: 'transparent',
-                    transition: 'background-color 0.15s ease',
-                    zIndex: 1,
-                    '&:hover': {
-                      backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                    },
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      right: '5px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      height: '20px',
-                      width: '2px',
-                      backgroundColor: 'divider',
-                      borderRadius: '1px',
-                    },
-                    '&:hover::after': {
-                      backgroundColor: 'primary.main',
-                    },
-                  }}
-                />
-              </Box>
-            ),
-          }))}
+      >
+        <Table
+          columns={columns}
           rows={filteredAndSortedTransfers}
           getRowId={(row) => row.id}
-          onRowClick={handleRowClick}
+          stickyHeader
+          bordered={false}
+          sx={{
+            border: 'none',
+            '& .MuiTableCell-root': {
+              borderLeft: 'none !important',
+              borderRight: 'none !important',
+            },
+          }}
+          {...({
+            onRowClick: (row: Transfer) => {
+              navigate(`/transfers/${row.id}`);
+            },
+          } as any)}
         />
+        {/* Resize handles overlay - positioned using measured header cell positions */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0, // Match the header row height exactly
+            pointerEvents: 'none',
+            zIndex: 10,
+          }}
+        >
+          {columnIds.map((columnId) => {
+            const position = headerPositions[columnId];
+            if (!position) return null;
+            
+            return (
+              <Box
+                key={`resize-handle-${columnId}`}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  handleResizeStart(columnId, e.clientX);
+                }}
+                sx={{
+                  position: 'absolute',
+                  left: `${position.left + position.width - 2}px`, // Center the handle on the edge
+                  top: '4px',
+                  bottom: '4px', // 4px gap from bottom
+                  width: '4px',
+                  cursor: 'col-resize',
+                  pointerEvents: 'auto',
+                  backgroundColor: 'transparent',
+                }}
+              />
+            );
+          })}
+        </Box>
+      </Box>
     </PageLayout>
   );
 }

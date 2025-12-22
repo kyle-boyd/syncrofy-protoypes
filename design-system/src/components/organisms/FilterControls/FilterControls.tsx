@@ -175,7 +175,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
                 gap: 1.5,
                 padding: 2,
                 backgroundColor: 'background.paper',
-                border: '1px solid',
+                border: '1.5px solid',
                 borderColor: 'divider',
                 borderRadius: '8px',
             }}

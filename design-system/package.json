@@ -1,5 +1,5 @@
 {
-  "name": "@syncrofy/design-system",
+  "name": "@kyleboyd/design-system",
   "version": "0.1.8",
   "description": "Syncrofy Design System - Material UI-based component library following atomic design principles",
   "type": "module",

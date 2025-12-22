@@ -17,6 +17,8 @@ export default defineConfig({
     alias: {
       // Our project's src alias
       '@': path.resolve(__dirname, './src'),
+      // Force design system to use local version
+      '@kyleboyd/design-system': path.resolve(__dirname, './design-system/dist/index.js'),
       // Force single React instance to prevent "Invalid hook call" errors
       'react': path.resolve(__dirname, './node_modules/react'),
       'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
@@ -37,6 +39,7 @@ export default defineConfig({
       '@emotion/react',
       '@emotion/styled',
       'framer-motion',
+      '@kyleboyd/design-system',
     ],
   },
   esbuild: {

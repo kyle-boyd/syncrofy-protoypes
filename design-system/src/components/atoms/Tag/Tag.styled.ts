@@ -6,7 +6,9 @@ export interface TagStyledProps {
   $variant: 'info' | 'error' | 'warning' | 'success' | 'neutral' | 'primary';
 }
 
-export const TagContainer = styled(Box)<TagStyledProps>(({ theme, $size, $variant }) => {
+export const TagContainer = styled(Box, {
+  shouldForwardProp: (prop) => prop !== '$size' && prop !== '$variant',
+})<TagStyledProps>(({ theme, $size, $variant }) => {
   const isSmall = $size === 'small';
   const height = isSmall ? 24 : 28;
   const borderRadius = height / 2; // 12px for small, 14px for medium
