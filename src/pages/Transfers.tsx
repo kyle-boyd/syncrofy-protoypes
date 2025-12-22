@@ -219,7 +219,31 @@ function Transfers() {
   const [resizingColumn, setResizingColumn] = useState<string | null>(null);
   const [resizeStartX, setResizeStartX] = useState(0);
   const [resizeStartWidth, setResizeStartWidth] = useState(0);
+  const resizeClickOffsetRef = useRef<number>(0); // Offset between click position and actual divider
   const tableRef = useRef<HTMLDivElement>(null);
+
+  // Measure header cell positions for accurate resize handle placement
+  const [headerPositions, setHeaderPositions] = useState<Record<string, { left: number; width: number }>>({});
+  const [headerHeight, setHeaderHeight] = useState<number>(48);
+  
+  // Column IDs in order - defined before columns to avoid dependency issues
+  const columnIds = useMemo(() => [
+    'id', 'sender', 'receiver', 'direction', 'senderFileName', 
+    'senderFileSize', 'status', 'startTime', 'endTime'
+  ], []);
+
+  // Default widths for each column
+  const defaultColumnWidths: Record<string, number> = {
+    id: 200,
+    sender: 200,
+    receiver: 200,
+    direction: 120,
+    senderFileName: 250,
+    senderFileSize: 130,
+    status: 100,
+    startTime: 180,
+    endTime: 180,
+  };
 
   // Get unique senders and receivers for filter options
   const allSenders = useMemo(() => {
@@ -309,32 +333,49 @@ function Transfers() {
   };
 
   // Column resizing handlers
-  const handleResizeStart = useCallback((columnId: string, startX: number) => {
+  const handleResizeStart = useCallback((columnId: string, clickX: number) => {
+    if (!tableRef.current) return;
+    
     // Get current width from state or use default
     let currentWidth = columnWidths[columnId];
     if (!currentWidth) {
-      // Default widths for each column
-      const defaultWidths: Record<string, number> = {
-        id: 200,
-        sender: 200,
-        receiver: 200,
-        direction: 120,
-        senderFileName: 250,
-        senderFileSize: 130,
-        status: 100,
-        startTime: 180,
-        endTime: 180,
-      };
-      currentWidth = defaultWidths[columnId] || 200;
+      currentWidth = defaultColumnWidths[columnId] || 200;
     }
+    
+    // Calculate the actual divider position in screen coordinates
+    const tableRect = tableRef.current.getBoundingClientRect();
+    const position = headerPositions[columnId];
+    
+    let dividerScreenX: number;
+    if (position) {
+      // Use the actual divider position (column left + current width)
+      const dividerRelativeX = position.left + currentWidth;
+      dividerScreenX = tableRect.left + dividerRelativeX;
+    } else {
+      // Fallback: calculate from column widths
+      const columnIndex = columnIds.indexOf(columnId);
+      let left = 0;
+      for (let i = 0; i <= columnIndex; i++) {
+        const prevColumnId = columnIds[i];
+        const width = columnWidths[prevColumnId] || defaultColumnWidths[prevColumnId] || 200;
+        left += width;
+      }
+      dividerScreenX = tableRect.left + left;
+    }
+    
+    // Calculate the offset between click position and actual divider position
+    const clickOffset = clickX - dividerScreenX;
+    resizeClickOffsetRef.current = clickOffset;
+    
     setResizingColumn(columnId);
-    setResizeStartX(startX);
+    setResizeStartX(dividerScreenX); // Use actual divider position as baseline
     setResizeStartWidth(currentWidth);
-  }, [columnWidths]);
+  }, [columnWidths, headerPositions, columnIds]);
 
   const handleResizeMove = useCallback((currentX: number) => {
     if (!resizingColumn) return;
-    const diff = currentX - resizeStartX;
+    // Account for where the user initially clicked relative to the divider
+    const diff = (currentX - resizeStartX) - resizeClickOffsetRef.current;
     const newWidth = Math.max(50, resizeStartWidth + diff); // Minimum width of 50px
     setColumnWidths(prev => ({
       ...prev,
@@ -344,6 +385,7 @@ function Transfers() {
 
   const handleResizeEnd = useCallback(() => {
     setResizingColumn(null);
+    resizeClickOffsetRef.current = 0;
   }, []);
 
   // Mouse event handlers for resizing
@@ -371,21 +413,48 @@ function Transfers() {
     };
   }, [resizingColumn, handleResizeMove, handleResizeEnd]);
 
-  // Measure header cell positions for accurate resize handle placement
-  const [headerPositions, setHeaderPositions] = useState<Record<string, { left: number; width: number }>>({});
-  
-  // Column IDs in order - defined before columns to avoid dependency issues
-  const columnIds = useMemo(() => [
-    'id', 'sender', 'receiver', 'direction', 'senderFileName', 
-    'senderFileSize', 'status', 'startTime', 'endTime'
-  ], []);
+  // Calculate handle position dynamically based on current column widths
+  const getHandlePosition = useCallback((columnId: string, index: number): number => {
+    const position = headerPositions[columnId];
+    
+    // If we have a measured position, use it as the base
+    if (position) {
+      // During resize, use the initial left position + current width
+      if (resizingColumn === columnId) {
+        const currentWidth = columnWidths[columnId] || position.width;
+        return position.left + currentWidth;
+      }
+      // Otherwise use the measured position
+      return position.left + position.width;
+    }
+    
+    // Fallback: calculate from column widths (for initial render before measurement)
+    let left = 0;
+    for (let i = 0; i <= index; i++) {
+      const prevColumnId = columnIds[i];
+      const width = columnWidths[prevColumnId] || defaultColumnWidths[prevColumnId] || 200;
+      left += width;
+    }
+    return left;
+  }, [columnIds, columnWidths, headerPositions, resizingColumn]);
   
   useEffect(() => {
     if (!tableRef.current) return;
     
+    // Skip position updates during active resizing to prevent infinite loops
+    if (resizingColumn) return;
+    
     const updatePositions = () => {
+      // Skip if actively resizing
+      if (resizingColumn) return;
+      
       const headerCells = tableRef.current?.querySelectorAll('.MuiTableCell-head');
-      if (!headerCells) return;
+      if (!headerCells || headerCells.length === 0) return;
+      
+      // Get header row height from first cell
+      const firstCell = headerCells[0] as HTMLElement;
+      const cellHeight = firstCell.getBoundingClientRect().height;
+      setHeaderHeight(cellHeight);
       
       const positions: Record<string, { left: number; width: number }> = {};
       headerCells.forEach((cell, index) => {
@@ -409,7 +478,7 @@ function Transfers() {
       clearTimeout(timeoutId);
       window.removeEventListener('resize', updatePositions);
     };
-  }, [columnIds, columnWidths, filteredAndSortedTransfers.length]);
+  }, [columnIds, filteredAndSortedTransfers.length, resizingColumn]); // Added resizingColumn to skip updates during resize
 
   const filterOptions: FilterOption[] = [
     {
@@ -767,7 +836,8 @@ function Transfers() {
             color: 'text.secondary',
             padding: '6px 12px !important',
             borderTop: 'none !important',
-            borderBottom: 'none !important',
+            borderBottom: '1px solid',
+            borderBottomColor: 'divider',
             borderLeft: 'none !important',
             borderRight: 'none !important',
             position: 'relative',
@@ -838,14 +908,17 @@ function Transfers() {
             top: 0,
             left: 0,
             right: 0,
-            bottom: 0, // Match the header row height exactly
+            height: `${headerHeight}px`, // Match header row height exactly
             pointerEvents: 'none',
             zIndex: 10,
           }}
         >
-          {columnIds.map((columnId) => {
-            const position = headerPositions[columnId];
-            if (!position) return null;
+          {columnIds.map((columnId, index) => {
+            // Skip divider after the last column
+            if (index === columnIds.length - 1) return null;
+            
+            const handleLeft = getHandlePosition(columnId, index);
+            const isResizing = resizingColumn === columnId;
             
             return (
               <Box
@@ -856,13 +929,23 @@ function Transfers() {
                 }}
                 sx={{
                   position: 'absolute',
-                  left: `${position.left + position.width - 2}px`, // Center the handle on the edge
-                  top: '4px',
-                  bottom: '4px', // 4px gap from bottom
-                  width: '4px',
+                  left: `${handleLeft - 1}px`, // Center the 2px handle on the column edge
+                  top: '8px', // Small margin from top
+                  bottom: '8px', // Small margin from bottom
+                  width: isResizing ? '4px' : '2px', // Wider when resizing for better visibility
                   cursor: 'col-resize',
                   pointerEvents: 'auto',
-                  backgroundColor: 'transparent',
+                  backgroundColor: isResizing ? 'primary.dark' : 'divider', // Highlight when resizing
+                  transition: isResizing ? 'none' : 'background-color 0.15s ease, width 0.15s ease', // No transition during resize
+                  '&:hover': {
+                    backgroundColor: 'primary.main', // Highlight on hover
+                    width: '4px', // Wider on hover for easier clicking
+                    // Keep left position the same to avoid shifting clickable area
+                  },
+                  '&:active': {
+                    backgroundColor: 'primary.dark', // Darker when dragging
+                    width: '4px',
+                  },
                 }}
               />
             );

@@ -293,7 +293,7 @@ export function RawEventsModal({
             borderColor: 'divider',
           }}
         >
-          <Typography variant="h6" component="h2">
+          <Typography variant="h6" component="h6" sx={{ fontWeight: 600 }}>
             Raw Transfer Events
           </Typography>
           <IconButton

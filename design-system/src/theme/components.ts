@@ -48,7 +48,9 @@ export const components: ThemeOptions['components'] = {
         },
       }),
       outlinedSecondary: ({ theme }) => ({
-        border: `1.5px solid ${theme.palette.secondary.main}`,
+        border: `1.5px solid var(--variant-outlinedBorder)`,
+        borderColor: 'var(--variant-outlinedBorder)',
+        borderImage: 'none',
         color: theme.palette.secondary.main,
         '&:hover': {
           borderColor: theme.palette.secondary.dark,
@@ -97,6 +99,7 @@ export const components: ThemeOptions['components'] = {
       }),
       outlined: ({ theme }) => ({
         backgroundColor: 'transparent',
+        borderImage: 'none',
         boxShadow: theme.shadows[1],
         '&:hover': {
           backgroundColor: theme.palette.action.hover,
@@ -339,6 +342,51 @@ export const components: ThemeOptions['components'] = {
         lineHeight: 1.5,
         letterSpacing: 0,
       },
+    },
+  },
+  MuiTypography: {
+    styleOverrides: {
+      // Ensure variant styles are applied with sufficient specificity
+      // This ensures that variant styles override browser defaults even when component prop changes the HTML element
+      h6: ({ theme }) => ({
+        fontWeight: theme.typography.h6.fontWeight || 600,
+        fontSize: theme.typography.h6.fontSize,
+        fontFamily: theme.typography.h6.fontFamily,
+        lineHeight: theme.typography.h6.lineHeight,
+        letterSpacing: theme.typography.h6.letterSpacing,
+      }),
+      h5: ({ theme }) => ({
+        fontWeight: theme.typography.h5.fontWeight,
+        fontSize: theme.typography.h5.fontSize,
+        fontFamily: theme.typography.h5.fontFamily,
+        lineHeight: theme.typography.h5.lineHeight,
+        letterSpacing: theme.typography.h5.letterSpacing,
+      }),
+      h4: ({ theme }) => ({
+        fontWeight: theme.typography.h4.fontWeight,
+        fontSize: theme.typography.h4.fontSize,
+        fontFamily: theme.typography.h4.fontFamily,
+        lineHeight: theme.typography.h4.lineHeight,
+        letterSpacing: theme.typography.h4.letterSpacing,
+      }),
+      h3: ({ theme }) => ({
+        fontWeight: theme.typography.h3.fontWeight,
+        fontSize: theme.typography.h3.fontSize,
+        fontFamily: theme.typography.h3.fontFamily,
+        lineHeight: theme.typography.h3.lineHeight,
+      }),
+      h2: ({ theme }) => ({
+        fontWeight: theme.typography.h2.fontWeight,
+        fontSize: theme.typography.h2.fontSize,
+        fontFamily: theme.typography.h2.fontFamily,
+        lineHeight: theme.typography.h2.lineHeight,
+      }),
+      h1: ({ theme }) => ({
+        fontWeight: theme.typography.h1.fontWeight,
+        fontSize: theme.typography.h1.fontSize,
+        fontFamily: theme.typography.h1.fontFamily,
+        lineHeight: theme.typography.h1.lineHeight,
+      }),
     },
   },
 };

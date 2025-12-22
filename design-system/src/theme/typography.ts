@@ -37,7 +37,7 @@ export const typography = {
   h6: {
     fontSize: '20px',
     fontFamily: 'Geist, sans-serif',
-    // fontWeight left undefined as in Figma
+    fontWeight: 600,
     letterSpacing: '-0.4px',
     lineHeight: 1.6,
   },

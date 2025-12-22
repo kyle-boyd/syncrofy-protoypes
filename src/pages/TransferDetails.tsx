@@ -19,7 +19,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import EmailIcon from '@mui/icons-material/Email';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import CodeIcon from '@mui/icons-material/Code';
+import DataObjectIcon from '@mui/icons-material/DataObject';
 import { Button, Tag, Chips } from '@kyleboyd/design-system';
 import { RawEventsModal } from '../components/RawEventsModal';
 import { PageLayout } from '../components/PageLayout';
@@ -239,7 +239,7 @@ function TransferDetails() {
 
           {/* Right: Actions */}
           <Stack direction="row" spacing={1} alignItems="center">
-            <Button variant="outlined" size="small" startIcon={<CodeIcon />} onClick={handleOpenRawEvents} sx={{ color: 'text.primary', borderColor: 'divider' }}>
+            <Button variant="outlined" size="small" startIcon={<DataObjectIcon />} onClick={handleOpenRawEvents} sx={{ color: 'text.primary', borderColor: 'divider' }}>
               View code
             </Button>
             <Button variant="outlined" size="small" startIcon={<EmailIcon />} sx={{ color: 'text.primary', borderColor: 'divider' }}>
